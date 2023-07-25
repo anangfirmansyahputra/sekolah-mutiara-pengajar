@@ -1,6 +1,7 @@
+import http from '@/plugin/https';
 import siswaService from "@/services/siswa.service";
-import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
-import { Breadcrumb, Button, Input, Popconfirm, Space, Table, Typography, message } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Card, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Typography, message } from "antd";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
@@ -8,7 +9,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
-import http from '@/plugin/https'
 
 Pengajar.layout = "L1";
 
@@ -20,6 +20,7 @@ export default function Pengajar({ siswa, kelas }) {
     const [searchedColumn, setSearchedColumn] = useState("");
     const [loading, setLoading] = useState(false);
     const [selectedRow, setSelectedRow] = useState([]);
+    const [open, setOpen] = useState(false)
 
     const searchInput = useRef(null);
     const data = [];
@@ -205,7 +206,7 @@ export default function Pengajar({ siswa, kelas }) {
             key: "nilai",
             ...getColumnSearchProps("nilai"),
             sortDirections: ["descend", "ascend"],
-            width: "200px",
+            width: "100px",
             render: (_, record) => (
                 <Link
                     href={{
@@ -214,6 +215,7 @@ export default function Pengajar({ siswa, kelas }) {
                     Detail
                 </Link>
             ),
+            fixed: "right"
         },
     ];
 
@@ -229,14 +231,18 @@ export default function Pengajar({ siswa, kelas }) {
         }),
     };
 
+    const handleCloseModal = () => {
+        setOpen(false)
+    }
+
     return (
         <>
             <Head>
                 <title>Siswa | Sistem Informasi Mutiara</title>
             </Head>
-            <div>
-                <Typography.Title level={2}>Data Siswa</Typography.Title>
-                <div className="my-5 flex items-center justify-between">
+            <Layout.Content>
+                <Typography.Title level={2} style={{ marginBottom: 0, padding: 0 }}>Siswa</Typography.Title>
+                <div className="mb-5 flex items-center justify-between">
                     <Breadcrumb
                         items={[
                             {
@@ -248,16 +254,17 @@ export default function Pengajar({ siswa, kelas }) {
                         ]}
                     />
                     <Space>
-                        <Link
+                        {/* <Link
                             href={{
                                 pathname: "/siswa/tambah",
-                            }}>
-                            <Button
-                                type="default"
-                                icon={<DeleteOutlined />}>
-                                Tambah
-                            </Button>
-                        </Link>
+                            }}> */}
+                        <Button
+                            onClick={() => setOpen(true)}
+                            type="primary"
+                            icon={<PlusOutlined />}>
+                            Tambah
+                        </Button>
+                        {/* </Link> */}
                         {selectedRow?.length > 0 && (
                             <Popconfirm
                                 title="Delete Data"
@@ -270,24 +277,79 @@ export default function Pengajar({ siswa, kelas }) {
                         )}
                     </Space>
                 </div>
-                <Table
-                    sticky
-                    bordered
-                    size="large"
-                    rowSelection={{
-                        type: "checkbox",
-                        ...rowSelection,
-                    }}
-                    style={{
-                        height: "100",
-                    }}
-                    columns={columns}
-                    dataSource={data}
-                    scroll={{
-                        x: 1200,
-                    }}
-                />
-            </div>
+                <Card title="Data Siswa">
+                    <Table
+                        sticky
+                        bordered
+                        size="large"
+                        rowSelection={{
+                            type: "checkbox",
+                            ...rowSelection,
+                        }}
+                        style={{
+                            height: "100",
+                        }}
+                        columns={columns}
+                        dataSource={data}
+                        scroll={{
+                            x: 1200,
+                        }}
+                    />
+                </Card>
+            </Layout.Content>
+            <Modal title="Form Siswa" open={open} onCancel={handleCloseModal} centered width={1000}>
+                <Card style={{
+                    margin: 20
+                }}>
+                    <Form labelCol={{ span: 6 }} colon={false} labelWrap layout='horizontal' labelAlign='left'>
+                        <Row gutter={24}>
+                            <Col span={12}>
+                                <Form.Item label="Nama" name="name" required rules={[{ message: "Mohon input nama", required: true }]}>
+                                    <Input placeholder="Nama" />
+                                </Form.Item>
+                                <Form.Item label="Password" name="password" required rules={[{ message: "Mohon input password", required: true }]}>
+                                    <Input.Password placeholder="Password" />
+                                </Form.Item>
+                                <Form.Item label="No Telp" name="noTlp" required rules={[{ message: "Mohon input no telp", required: true }]}>
+                                    <Input placeholder="No Telp" maxLength={16} />
+                                </Form.Item>
+                                <Form.Item label="Kelas" name="kelas" required rules={[{ message: "Mohon input NIS", required: true }]}>
+                                    <div className='flex gap-2'>
+                                        <Input placeholder="Kelas" maxLength={16} />
+                                        <Input placeholder="Nama Kelas" maxLength={16} />
+                                    </div>
+                                </Form.Item>
+                                <Form.Item label="Alamat" name="alamat" required rules={[{ message: "Mohon input alamat", required: true }]}>
+                                    <Input.TextArea placeholder="Alamat" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item label="Nis" name="nis" required rules={[{ message: "Mohon input NIS", required: true }]}>
+                                    <Input placeholder="NIS" maxLength={16} />
+                                </Form.Item>
+                                <Form.Item label="Tempat Lahir" name="bop" required rules={[{ message: "Mohon input tempat tanggal lahir", required: true }]}>
+                                    <Input placeholder="Tempat Lahir" maxLength={16} />
+                                </Form.Item>
+                                <Form.Item label="Jenis Kelamin" name="gender" required rules={[{ message: "Mohon pilih jenis kelamin", required: true }]}>
+                                    <Select options={[
+                                        {
+                                            value: "L",
+                                            label: "Laki - laki"
+                                        },
+                                        {
+                                            value: "P",
+                                            label: "Perempuan"
+                                        },
+                                    ]} placeholder="Jenis Kelamin" />
+                                </Form.Item>
+                                <Form.Item label="Tanggal Lahir" name="tgl" required rules={[{ message: "Mohon input tanggal lahir", required: true }]}>
+                                    <DatePicker style={{ width: "100%" }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                </Card>
+            </Modal>
         </>
     );
 }
@@ -295,15 +357,6 @@ export default function Pengajar({ siswa, kelas }) {
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
     const { data: siswa } = await http.get('/siswa')
-    // if (!session) {
-    //     return {
-    //         redirect: {
-    //             permanent: false,
-    //             destination: "/login",
-    //         },
-    //         props: {},
-    //     };
-    // }
 
     return {
         props: {
