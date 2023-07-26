@@ -621,7 +621,7 @@ export default function Pengajar({ siswa, kelas }) {
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
     const { data: siswa } = await http.get('/siswa')
-    const { data: session } = getSession(ctx)
+    const session = await getSession(ctx)
 
     if (!session) {
         return {
