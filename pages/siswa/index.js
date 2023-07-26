@@ -1,7 +1,7 @@
 import http from '@/plugin/https';
 import siswaService from "@/services/siswa.service";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Breadcrumb, Button, Card, Col, DatePicker, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Typography, message } from "antd";
+import { DownOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Card, Col, DatePicker, Dropdown, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Typography, message } from "antd";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
@@ -9,18 +9,23 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
+import Swal from 'sweetalert2';
 
 Pengajar.layout = "L1";
 
 export default function Pengajar({ siswa, kelas }) {
     const { push, asPath } = useRouter();
+    const router = useRouter()
+    const [form] = Form.useForm()
 
     // State
     const [searchText, setSearchText] = useState("");
+    const [isEdit, setIsEdit] = useState(false)
     const [searchedColumn, setSearchedColumn] = useState("");
     const [loading, setLoading] = useState(false);
     const [selectedRow, setSelectedRow] = useState([]);
     const [open, setOpen] = useState(false)
+    const [id, setId] = useState(null)
 
     const searchInput = useRef(null);
     const data = [];
@@ -35,7 +40,7 @@ export default function Pengajar({ siswa, kelas }) {
             alamat: item?.alamat,
             tgl: dayjs(item?.tgl).format("DD/MM/YY"),
             nilai: item?.nilai,
-            kelas: item?.kelas?.kelas + item?.kelas?.name,
+            kelas: `${item?.kelas?.kelas ?? ""} ${item?.kelas?.name ?? "-"}`,
         })
     );
 
@@ -155,6 +160,46 @@ export default function Pengajar({ siswa, kelas }) {
         }
     };
 
+
+    const items = (id) => {
+        return [
+            {
+                label: (
+                    <a onClick={e => e.preventDefault()}>
+                        Detail
+                    </a>
+                ),
+                key: '0',
+            },
+            {
+                label: (
+                    <a onClick={e => e.preventDefault()}>
+                        Edit
+                    </a>
+                ),
+                key: '1',
+            },
+            {
+                label: (
+                    <a onClick={e => e.preventDefault()}>
+                        Edit Password
+                    </a>
+                ),
+                key: '2',
+            },
+            {
+                label: (
+                    <a onClick={e => e.preventDefault()}>
+                        Delete
+                    </a>
+                ),
+                key: '3',
+                danger: true
+            },
+        ];
+    }
+
+
     const columns = [
         {
             title: "Nama",
@@ -200,23 +245,42 @@ export default function Pengajar({ siswa, kelas }) {
             ...getColumnSearchProps("tgl"),
             width: "200px",
         },
+        // {
+        //     title: "Nilai",
+        //     dataIndex: "nilai",
+        //     key: "nilai",
+        //     ...getColumnSearchProps("nilai"),
+        //     sortDirections: ["descend", "ascend"],
+        //     width: "100px",
+        //     render: (_, record) => (
+        //         <Link
+        //             href={{
+        //                 pathname: `nilai/${record?.key}`,
+        //             }}>
+        //             Detail
+        //         </Link>
+        //     ),
+        //     fixed: "right"
+        // },
         {
-            title: "Nilai",
-            dataIndex: "nilai",
-            key: "nilai",
-            ...getColumnSearchProps("nilai"),
-            sortDirections: ["descend", "ascend"],
+            title: "Aksi",
+            fixed: "right",
             width: "100px",
             render: (_, record) => (
-                <Link
-                    href={{
-                        pathname: `nilai/${record?.key}`,
-                    }}>
-                    Detail
-                </Link>
-            ),
-            fixed: "right"
-        },
+                <Dropdown
+                    menu={{
+                        items: items(record.key)
+                    }}
+                >
+                    <a onClick={(e) => e.preventDefault()}>
+                        <Space>
+                            Aksi
+                            <DownOutlined />
+                        </Space>
+                    </a>
+                </Dropdown>
+            )
+        }
     ];
 
     const rowSelection = {
@@ -235,13 +299,52 @@ export default function Pengajar({ siswa, kelas }) {
         setOpen(false)
     }
 
+    const handleSubmit = (values) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: isEdit ? "Data akan dirubah" : "Data akan disimpan",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    if (isEdit) {
+                        // const res = await kelasService.edit(payload, id)
+                    } else {
+                        const res = await siswaService.create(values)
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: isEdit ? "Data berhasil diupdate" : "Data berhasil disimpan"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch (err) {
+                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        })
+    }
+
     return (
         <>
             <Head>
                 <title>Siswa | Sistem Informasi Mutiara</title>
             </Head>
             <Layout.Content>
-                <Typography.Title level={2} style={{ marginBottom: 0, padding: 0 }}>Siswa</Typography.Title>
+                <Typography.Title level={2} style={{ margin: 0, padding: 0 }}>Siswa</Typography.Title>
                 <div className="mb-5 flex items-center justify-between">
                     <Breadcrumb
                         items={[
@@ -281,11 +384,11 @@ export default function Pengajar({ siswa, kelas }) {
                     <Table
                         sticky
                         bordered
-                        size="large"
-                        rowSelection={{
-                            type: "checkbox",
-                            ...rowSelection,
-                        }}
+                        size="small"
+                        // rowSelection={{
+                        //     type: "checkbox",
+                        //     ...rowSelection,
+                        // }}
                         style={{
                             height: "100",
                         }}
@@ -297,11 +400,11 @@ export default function Pengajar({ siswa, kelas }) {
                     />
                 </Card>
             </Layout.Content>
-            <Modal title="Form Siswa" open={open} onCancel={handleCloseModal} centered width={1000}>
+            <Modal title="Form Siswa" open={open} footer={<Button type='primary' onClick={() => form.submit()} icon={<SaveOutlined />}>Submit</Button>} onCancel={handleCloseModal} centered width={1000}>
                 <Card style={{
                     margin: 20
                 }}>
-                    <Form labelCol={{ span: 6 }} colon={false} labelWrap layout='horizontal' labelAlign='left'>
+                    <Form onFinish={handleSubmit} labelCol={{ span: 6 }} form={form} colon={false} labelWrap layout='horizontal' labelAlign='left'>
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item label="Nama" name="name" required rules={[{ message: "Mohon input nama", required: true }]}>
@@ -313,11 +416,11 @@ export default function Pengajar({ siswa, kelas }) {
                                 <Form.Item label="No Telp" name="noTlp" required rules={[{ message: "Mohon input no telp", required: true }]}>
                                     <Input placeholder="No Telp" maxLength={16} />
                                 </Form.Item>
-                                <Form.Item label="Kelas" name="kelas" required rules={[{ message: "Mohon input NIS", required: true }]}>
-                                    <div className='flex gap-2'>
-                                        <Input placeholder="Kelas" maxLength={16} />
-                                        <Input placeholder="Nama Kelas" maxLength={16} />
-                                    </div>
+                                <Form.Item label="Kelas" name="kelas" required rules={[{ message: "Mohon pilih kelas", required: true }]}>
+                                    <Select placeholder="Kelas" options={kelas.data.map(item => ({
+                                        label: `${item.kelas} ${item.name}`,
+                                        value: item._id
+                                    }))} />
                                 </Form.Item>
                                 <Form.Item label="Alamat" name="alamat" required rules={[{ message: "Mohon input alamat", required: true }]}>
                                     <Input.TextArea placeholder="Alamat" />
@@ -345,6 +448,7 @@ export default function Pengajar({ siswa, kelas }) {
                                 <Form.Item label="Tanggal Lahir" name="tgl" required rules={[{ message: "Mohon input tanggal lahir", required: true }]}>
                                     <DatePicker style={{ width: "100%" }} />
                                 </Form.Item>
+
                             </Col>
                         </Row>
                     </Form>

@@ -19,8 +19,6 @@ export default function Kelas({ kelas }) {
     // State
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
-    const [loadingFirst, setLoadingFirst] = useState(true);
-    const [selectedRow, setSelectedRow] = useState([]);
     const [open, setOpen] = useState(false)
     const [isEdit, setIsEdit] = useState(false)
     const [id, setId] = useState(null)
@@ -40,9 +38,6 @@ export default function Kelas({ kelas }) {
         namaKelas: item.name,
         kelas: item.kelas
     }))
-
-    const { push, asPath } = useRouter();
-    const { data: session } = useSession();
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
@@ -143,18 +138,6 @@ export default function Kelas({ kelas }) {
             ),
     });
 
-    const confirm = async (record) => {
-        try {
-            setLoadingFirst(true);
-            const res = await kelasService.delete({ ids: selectedRow });
-            message.success(res?.message);
-            push(asPath);
-        } catch (err) {
-            message.error(err?.message);
-        } finally {
-            setLoadingFirst(false);
-        }
-    };
 
     const handleEdit = async (id) => {
         setOpen(true)
@@ -186,15 +169,6 @@ export default function Kelas({ kelas }) {
             title: "Nama Kelas",
             dataIndex: "namaKelas",
             key: "namaKelas",
-            // ...getColumnSearchProps("namaKelas"),
-            // render: (_, record) => (
-            //     <Link
-            //         href={{
-            //             pathname: `/kelas/${record?.key}`,
-            //         }}>
-            //         {record?.kelas}
-            //     </Link>
-            // ),
         },
         {
             title: "Aksi",
@@ -325,10 +299,6 @@ export default function Kelas({ kelas }) {
                         sticky
                         bordered
                         size="small"
-                        // rowSelection={{
-                        //     type: "checkbox",
-                        //     ...rowSelection,
-                        // }}
                         style={{
                             height: "100",
                         }}
