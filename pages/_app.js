@@ -1,9 +1,8 @@
 import LayoutComp from "@/components/LayoutComp";
 import { AdminProvider } from "@/context";
 import "@/styles/globals.css";
-import UseAuth from "@/utils/auth";
 import { ConfigProvider, Spin } from "antd";
-import { SessionProvider, getSession, useSession } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -43,38 +42,36 @@ export default function MyApp({ Component, pageProps, session }) {
 
     return (
         <AdminProvider>
-            <SessionProvider session={session}>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            colorPrimary: "#008846",
-                            fontSize: 12,
-                        },
+            <ConfigProvider
+                theme={{
+                    token: {
+                        colorPrimary: "#008846",
+                        fontSize: 12,
+                    },
+                }}>
+                <Spin
+                    spinning={isLoading}
+                    style={{
+                        maxHeight: "100vh",
                     }}>
-                    <Spin
-                        spinning={isLoading}
+                    <Layout
+                        isLoading={isLoading}
                         style={{
-                            maxHeight: "100vh",
+                            height: "100vh",
                         }}>
-                        <Layout
-                            isLoading={isLoading}
-                            style={{
-                                height: "100vh",
-                            }}>
-                            <Component
-                                {...pageProps}
-                            // pengajar={pengajar}
-                            // ekstrakurikuler={ekstrakurikuler}
-                            // pengumuman={pengumuman}
-                            // siswa={siswa}
-                            // kelas={kelas}
-                            // gallery={gallery}
-                            // prestasi={prestasi}
-                            />
-                        </Layout>
-                    </Spin>
-                </ConfigProvider>
-            </SessionProvider>
+                        <Component
+                            {...pageProps}
+                        // pengajar={pengajar}
+                        // ekstrakurikuler={ekstrakurikuler}
+                        // pengumuman={pengumuman}
+                        // siswa={siswa}
+                        // kelas={kelas}
+                        // gallery={gallery}
+                        // prestasi={prestasi}
+                        />
+                    </Layout>
+                </Spin>
+            </ConfigProvider>
         </AdminProvider>
     );
 }
