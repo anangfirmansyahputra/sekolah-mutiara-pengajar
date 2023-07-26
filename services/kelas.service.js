@@ -13,10 +13,22 @@ const kelasService = {
         return data;
     },
 
-    async delete(ids) {
-        const { data } = await http.post("/kelas/delete", ids);
-        return data;
+    // async delete(ids) {
+    //     const { data } = await http.post("/kelas/delete", ids);
+    //     return data;
+    // },
+
+    async find(id) {
+        const { data } = await http.get(`/kelas/${id}`)
+
+        return data
     },
+
+    async delete(id) {
+        const { data } = await http.delete(`/kelas/delete/${id}`)
+
+        return data
+    }
 };
 
 export default kelasService;

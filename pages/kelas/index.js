@@ -1,45 +1,48 @@
+import http from '@/plugin/https';
 import kelasService from "@/services/kelas.service";
-import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
-import { Breadcrumb, Button, Input, Space, Table, Typography, message } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Card, Col, Form, Input, Layout, Modal, Row, Select, Space, Table, Typography, message } from "antd";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
-import http from '@/plugin/https'
+import Swal from 'sweetalert2';
 
 Kelas.layout = "L1";
 
 export default function Kelas({ kelas }) {
+    const [form] = Form.useForm()
+    const router = useRouter()
+
     // State
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const [loadingFirst, setLoadingFirst] = useState(true);
     const [selectedRow, setSelectedRow] = useState([]);
+    const [open, setOpen] = useState(false)
+    const [isEdit, setIsEdit] = useState(false)
+    const [id, setId] = useState(null)
+    let data = []
+
+    const handleClose = () => {
+        setOpen(false)
+        form.resetFields()
+        setIsEdit(false)
+        setId(null)
+    }
 
     const searchInput = useRef(null);
-    const data = [
-        {
-            key: 7,
-            kelas: 7,
-            jumlah: kelas?.data?.filter((item) => item?.kelas === "7")?.length,
-        },
-        {
-            key: 8,
-            kelas: 8,
-            jumlah: kelas?.data?.filter((item) => item?.kelas === "8")?.length,
-        },
-        {
-            key: 9,
-            kelas: 9,
-            jumlah: kelas?.data?.filter((item) => item?.kelas === "9")?.length,
-        },
-    ];
+
+    kelas.data.map(item => data.push({
+        key: item._id,
+        namaKelas: item.name,
+        kelas: item.kelas
+    }))
 
     const { push, asPath } = useRouter();
     const { data: session } = useSession();
-    const token = session?.user?.user?.accessToken;
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
@@ -50,6 +53,7 @@ export default function Kelas({ kelas }) {
         clearFilters();
         setSearchText("");
     };
+
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
             <div
@@ -152,6 +156,23 @@ export default function Kelas({ kelas }) {
         }
     };
 
+    const handleEdit = async (id) => {
+        setOpen(true)
+        setId(id)
+        setIsEdit(true)
+
+        try {
+            const res = await kelasService.find(id)
+            form.setFieldsValue({ name: res.data.name, kelas: res.data.kelas })
+        } catch {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Edit sedang bermasalah, silahkan mencoba kembali"
+            })
+        }
+    }
+
     const columns = [
         {
             title: "Kelas",
@@ -160,43 +181,126 @@ export default function Kelas({ kelas }) {
             // width: "300px",
             ...getColumnSearchProps("kelas"),
             // fixed: "left",
-            render: (_, record) => (
-                <Link
-                    href={{
-                        pathname: `/kelas/${record?.key}`,
-                    }}>
-                    {record?.kelas}
-                </Link>
-            ),
         },
         {
-            title: "Jumlah Kelas",
-            dataIndex: "jumlah",
-            key: "jumlah",
-            // width: "300px",
-            ...getColumnSearchProps("jumlah"),
-            // fixed: "left",
+            title: "Nama Kelas",
+            dataIndex: "namaKelas",
+            key: "namaKelas",
+            // ...getColumnSearchProps("namaKelas"),
+            // render: (_, record) => (
+            //     <Link
+            //         href={{
+            //             pathname: `/kelas/${record?.key}`,
+            //         }}>
+            //         {record?.kelas}
+            //     </Link>
+            // ),
         },
+        {
+            title: "Aksi",
+            width: 150,
+            fixed: "right",
+            render: (_, record) => (
+                <>
+                    <Button type='link' onClick={() => {
+                        handleEdit(record.key)
+                    }}>
+                        Edit
+                    </Button>
+                    <Button type='link' danger onClick={() => handleDelete(record.key)}>
+                        Hapus
+                    </Button>
+                </>
+            )
+        }
+
     ];
 
-    const rowSelection = {
-        onChange: (selectedRowKeys, selectedRows) => {
-            setSelectedRow(selectedRowKeys);
-        },
-        getCheckboxProps: (record) => ({
-            disabled: record.name === "Disabled User",
-            name: record.name,
-        }),
-    };
+    const handleSubmit = (values) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: isEdit ? "Data akan dirubah" : "Data akan disimpan",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const payload = {
+                    name: values.name,
+                    kelas: values.kelas
+                }
+
+                try {
+                    if (isEdit) {
+                        const res = await kelasService.edit(payload, id)
+                    } else {
+                        const res = await kelasService.create(payload)
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: isEdit ? "Data berhasil diupdate" : "Data berhasil disimpan"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch {
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        })
+    }
+
+    const handleDelete = (id) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: "Data akan dihapus secara permanen",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await kelasService.delete(id)
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: "Data berhasil dihapus"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch {
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: "Data gagal dihapus, mohon coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        })
+    }
 
     return (
         <>
             <Head>
                 <title>Kelas | Sistem Informasi Mutiara</title>
             </Head>
-            <>
-                <Typography.Title level={2}>Data Kelas</Typography.Title>
-                <div className="my-5 flex items-center justify-between">
+            <Layout.Content>
+                <Typography.Title level={2} style={{ margin: 0, padding: 0 }}>Kelas</Typography.Title>
+                <div className="mb-5 flex items-center justify-between">
                     <Breadcrumb
                         items={[
                             {
@@ -208,48 +312,62 @@ export default function Kelas({ kelas }) {
                         ]}
                     />
                     <Space>
-                        <Link
-                            href={{
-                                pathname: "/kelas/tambah",
-                            }}>
-                            <Button
-                                type="default"
-                                icon={<DeleteOutlined />}>
-                                Tambah
-                            </Button>
-                        </Link>
+                        <Button
+                            onClick={() => setOpen(true)}
+                            type="primary"
+                            icon={<PlusOutlined />}>
+                            Tambah
+                        </Button>
                     </Space>
                 </div>
-                <Table
-                    sticky
-                    bordered
-                    size="large"
-                    rowSelection={{
-                        type: "checkbox",
-                        ...rowSelection,
-                    }}
-                    style={{
-                        height: "100",
-                    }}
-                    columns={columns}
-                    dataSource={data}
-                />
-            </>
+                <Card title="Data Kelas">
+                    <Table
+                        sticky
+                        bordered
+                        size="small"
+                        // rowSelection={{
+                        //     type: "checkbox",
+                        //     ...rowSelection,
+                        // }}
+                        style={{
+                            height: "100",
+                        }}
+                        columns={columns}
+                        dataSource={data}
+                    />
+                </Card>
+            </Layout.Content>
+            <Modal open={open} title="Form Kelas" onCancel={handleClose} onOk={() => form.submit()}>
+                <Card className="m-[20px]">
+                    <Form colon={false} layout="vertical" form={form} onFinish={handleSubmit}>
+                        <Form.Item label="Kelas" name="kelas" required rules={[{ message: "Mohon isi nama kelas", required: true }]}>
+                            <Select placeholder="Mohon pilih kelas" options={[
+                                {
+                                    label: "7",
+                                    value: '7'
+                                },
+                                {
+                                    label: "8",
+                                    value: '8'
+                                },
+                                {
+                                    label: "9",
+                                    value: '9'
+                                },
+                            ]} />
+                        </Form.Item>
+                        <Form.Item label="Nama Kelas" name="name" required rules={[{ message: "Mohon isi nama kelas", required: true }]}>
+                            <Input placeholder="Nama Kelas" />
+                        </Form.Item>
+                    </Form>
+                </Card>
+            </Modal>
         </>
     );
 }
 
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
-    // if (!session) {
-    //     return {
-    //         redirect: {
-    //             permanent: false,
-    //             destination: "/login",
-    //         },
-    //         props: {},
-    //     };
-    // }
 
     return {
         props: {
