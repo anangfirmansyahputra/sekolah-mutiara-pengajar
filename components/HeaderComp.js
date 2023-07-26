@@ -25,7 +25,7 @@ export default function HeaderComp() {
         {
             key: "2",
             danger: true,
-            label: <div onClick={() => signOut({ callbackUrl: (role === "siswa" && "/login-siswa") || (role === "admin" && "/login") || (role === "pengajar" && "/login-pengajar") })}>Logout</div>,
+            label: <div onClick={() => signOut({ callbackUrl: "/login" })}>Logout</div>,
         },
     ];
 

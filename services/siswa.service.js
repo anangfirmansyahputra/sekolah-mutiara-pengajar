@@ -8,7 +8,7 @@ const siswaService = {
     },
 
     async edit(payload, id) {
-        const { data } = await http.put(`/siswa/${id}`, payload);
+        const { data } = await http.put(`/siswa/${id}/update`, payload);
 
         return data;
     },
@@ -21,6 +21,18 @@ const siswaService = {
 
     async getById(id) {
         const { data } = await http.get(`/siswa/${id}`)
+
+        return data
+    },
+
+    async deleteOne(id) {
+        const { data } = await http.delete(`/siswa/${id}/delete`)
+
+        return data
+    },
+
+    async find(id) {
+        const { data } = await http.get(`siswa/${id}`)
 
         return data
     }

@@ -1,9 +1,10 @@
+import DetailSiswaModal from '@/components/modals/DetailSiswaModal';
 import http from '@/plugin/https';
 import siswaService from "@/services/siswa.service";
 import { DownOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
 import { Breadcrumb, Button, Card, Col, DatePicker, Dropdown, Form, Input, Layout, Modal, Popconfirm, Row, Select, Space, Table, Typography, message } from "antd";
 import dayjs from "dayjs";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -17,6 +18,7 @@ export default function Pengajar({ siswa, kelas }) {
     const { push, asPath } = useRouter();
     const router = useRouter()
     const [form] = Form.useForm()
+    const [passForm] = Form.useForm()
 
     // State
     const [searchText, setSearchText] = useState("");
@@ -26,6 +28,9 @@ export default function Pengajar({ siswa, kelas }) {
     const [selectedRow, setSelectedRow] = useState([]);
     const [open, setOpen] = useState(false)
     const [id, setId] = useState(null)
+    const [passOpen, setPassOpen] = useState(false)
+    const [detailData, setDetailData] = useState(null)
+    const [detailModal, setDetailModal] = useState(false)
 
     const searchInput = useRef(null);
     const data = [];
@@ -160,12 +165,135 @@ export default function Pengajar({ siswa, kelas }) {
         }
     };
 
+    const handleDelete = async (id) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: "Data akan dihapus permanen",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await siswaService.deleteOne(id)
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: "Data berhasil dihapus"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch (err) {
+                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        }
+        )
+    }
+
+    const handleEdit = async (id) => {
+        try {
+            setIsEdit(true)
+            setOpen(true)
+            setId(id)
+            const { data } = await siswaService.find(id)
+            form.setFieldsValue({
+                name: data.name,
+                nis: data.nis,
+                password: data.password,
+                alamat: data.alamat,
+                kelas: data.kelas._id,
+                noTlp: data.noTlp,
+                gender: data.gender,
+                bop: data.bop,
+                tgl: dayjs(data.tgl)
+            })
+
+        } catch (err) {
+            console.log(err);
+            Swal.fire({
+                icon: 'error',
+                title: "Gagal",
+                text: "Server sedang mengalami gangguan, silahkan coba kembali"
+            })
+        }
+    }
+
+    const handleUpdatePassword = async (value) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: "Data akan diubah",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await siswaService.edit(value, id)
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: "Data password berhasil dirubah"
+                    })
+                    router.push(router.asPath)
+                    setPassOpen(false)
+                    form.resetFields()
+                    passForm.resetFields()
+                    setPassOpen(false)
+                    setId(null)
+                } catch (err) {
+                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: messageErr ?? "Data gagal dirubah, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        }
+        )
+    }
+
+    const handleCloseDetailModal = () => {
+        setDetailModal(false)
+        setDetailData(null)
+    }
+
+    const handleFindData = async (id) => {
+        try {
+            const res = await siswaService.find(id)
+            setDetailData(res.data)
+            setDetailModal(true)
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Server sedang bermasalah, silahkan coba kembali"
+            })
+        }
+    }
+
 
     const items = (id) => {
         return [
             {
                 label: (
-                    <a onClick={e => e.preventDefault()}>
+                    <a onClick={e => {
+                        e.preventDefault()
+                        handleFindData(id)
+                    }}>
                         Detail
                     </a>
                 ),
@@ -173,7 +301,10 @@ export default function Pengajar({ siswa, kelas }) {
             },
             {
                 label: (
-                    <a onClick={e => e.preventDefault()}>
+                    <a onClick={e => {
+                        e.preventDefault()
+                        handleEdit(id)
+                    }}>
                         Edit
                     </a>
                 ),
@@ -181,7 +312,11 @@ export default function Pengajar({ siswa, kelas }) {
             },
             {
                 label: (
-                    <a onClick={e => e.preventDefault()}>
+                    <a onClick={e => {
+                        e.preventDefault()
+                        setPassOpen(true)
+                        setId(id)
+                    }}>
                         Edit Password
                     </a>
                 ),
@@ -189,7 +324,10 @@ export default function Pengajar({ siswa, kelas }) {
             },
             {
                 label: (
-                    <a onClick={e => e.preventDefault()}>
+                    <a onClick={e => {
+                        e.preventDefault()
+                        handleDelete(id)
+                    }}>
                         Delete
                     </a>
                 ),
@@ -297,6 +435,15 @@ export default function Pengajar({ siswa, kelas }) {
 
     const handleCloseModal = () => {
         setOpen(false)
+        setId(null)
+        setIsEdit(false)
+        form.resetFields()
+    }
+
+    const handleClosePassModal = () => {
+        setPassOpen(false)
+        setId(null)
+        passForm.resetFields()
     }
 
     const handleSubmit = (values) => {
@@ -311,7 +458,7 @@ export default function Pengajar({ siswa, kelas }) {
             if (result.isConfirmed) {
                 try {
                     if (isEdit) {
-                        // const res = await kelasService.edit(payload, id)
+                        const res = await siswaService.edit(values, id)
                     } else {
                         const res = await siswaService.create(values)
                     }
@@ -326,6 +473,7 @@ export default function Pengajar({ siswa, kelas }) {
                     setId(null)
                     setIsEdit(false)
                 } catch (err) {
+                    console.log(err);
                     const messageErr = JSON.parse(err?.request?.response)?.message
                     Swal.fire({
                         icon: 'error',
@@ -410,9 +558,11 @@ export default function Pengajar({ siswa, kelas }) {
                                 <Form.Item label="Nama" name="name" required rules={[{ message: "Mohon input nama", required: true }]}>
                                     <Input placeholder="Nama" />
                                 </Form.Item>
-                                <Form.Item label="Password" name="password" required rules={[{ message: "Mohon input password", required: true }]}>
-                                    <Input.Password placeholder="Password" />
-                                </Form.Item>
+                                {!isEdit && (
+                                    <Form.Item label="Password" name="password" required rules={[{ message: "Mohon input password", required: true }]}>
+                                        <Input.Password placeholder="Password" />
+                                    </Form.Item>
+                                )}
                                 <Form.Item label="No Telp" name="noTlp" required rules={[{ message: "Mohon input no telp", required: true }]}>
                                     <Input placeholder="No Telp" maxLength={16} />
                                 </Form.Item>
@@ -454,6 +604,16 @@ export default function Pengajar({ siswa, kelas }) {
                     </Form>
                 </Card>
             </Modal>
+            <Modal onCancel={handleClosePassModal} open={passOpen} title="Form Ubah Password" onOk={() => passForm.submit()}>
+                <Card style={{ margin: 20 }}>
+                    <Form form={passForm} onFinish={handleUpdatePassword}>
+                        <Form.Item label="Password Baru" name="password">
+                            <Input.Password placeholder='Password Baru' />
+                        </Form.Item>
+                    </Form>
+                </Card>
+            </Modal>
+            <DetailSiswaModal open={detailModal} data={detailData} onCancel={handleCloseDetailModal} />
         </>
     );
 }
@@ -461,6 +621,17 @@ export default function Pengajar({ siswa, kelas }) {
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
     const { data: siswa } = await http.get('/siswa')
+    const { data: session } = getSession(ctx)
+
+    if (!session) {
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login",
+            },
+            props: {},
+        };
+    }
 
     return {
         props: {

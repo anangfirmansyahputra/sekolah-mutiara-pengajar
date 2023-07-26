@@ -2,7 +2,7 @@ import http from '@/plugin/https';
 import kelasService from "@/services/kelas.service";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Breadcrumb, Button, Card, Col, Form, Input, Layout, Modal, Row, Select, Space, Table, Typography, message } from "antd";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -338,6 +338,17 @@ export default function Kelas({ kelas }) {
 
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
+    const { data: session } = getSession(ctx)
+
+    if (!session) {
+        return {
+            redirect: {
+                permanent: false,
+                destination: "/login",
+            },
+            props: {},
+        };
+    }
 
     return {
         props: {
