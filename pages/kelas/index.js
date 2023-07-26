@@ -338,12 +338,11 @@ export default function Kelas({ kelas }) {
 
 export async function getServerSideProps(ctx) {
     const { data } = await http.get('/kelas')
-    const { data: session } = getSession(ctx)
+    const session = await getSession(ctx)
 
     if (!session) {
         return {
             redirect: {
-                permanent: false,
                 destination: "/login",
             },
             props: {},

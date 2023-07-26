@@ -22,7 +22,7 @@ export default function Sidebar() {
             theme="light"
             collapsed={collapsed}
             onCollapse={(value) => setCollapsed(value)}
-            onBreakpoint={(broken) => {}}>
+            onBreakpoint={(broken) => { }}>
             <Link
                 style={{
                     padding: "0 16px",

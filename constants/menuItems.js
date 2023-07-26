@@ -27,11 +27,6 @@ const items = [
         icon: <CarryOutOutlined />,
     },
     {
-        label: "Arsip",
-        key: "arsip",
-        icon: <FolderOutlined />,
-    },
-    {
         label: "Pengumuman",
         key: "pengumuman",
         icon: <BellOutlined />,
