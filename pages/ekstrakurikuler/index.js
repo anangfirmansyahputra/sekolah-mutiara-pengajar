@@ -1,7 +1,8 @@
-import useDeleteEkstra from "@/context/ektrakurikuler/useDeleteEkstra";
+import http from '@/plugin/https';
 import ekstrakurikulerService from "@/services/ekstrakurikuler.service";
-import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
-import { Alert, Breadcrumb, Button, Input, Popconfirm, Space, Table, Typography, message } from "antd";
+import siswaService from '@/services/siswa.service';
+import { DeleteOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
+import { Alert, Breadcrumb, Button, Card, Col, Form, Input, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, TimePicker, Typography, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import { getSession, useSession } from "next-auth/react";
@@ -10,11 +11,14 @@ import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import Swal from "sweetalert2";
-import http from '@/plugin/https'
 
 Ekstrakurikuler.layout = "L1";
 
-export default function Ekstrakurikuler({ ekstrakurikuler }) {
+export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
+    console.log(pengajar);
+
+    const [form] = Form.useForm()
+
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef(null);
@@ -24,6 +28,13 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
     const router = useRouter();
     const { data: session } = useSession();
     const token = session?.user?.user?.accessToken;
+    const [open, setOpen] = useState(false)
+    const [isEdit, setIsEdit] = useState(false)
+    const [id, setId] = useState(null)
+
+    const handleClose = () => {
+        setOpen(false)
+    }
 
     ekstrakurikuler?.data.map(
         (item) =>
@@ -199,7 +210,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
             key: "wajib",
             ...getColumnSearchProps("wajib"),
             sortDirections: ["descend", "ascend"],
-            render: (_, record) => <div className={`w-fit ${record?.wajib === "Wajib" ? "bg-green-300" : "bg-yellow-300"} rounded px-5 py-1 `}>{record?.wajib}</div>,
+            render: (_, record) => <Tag color={record.wajib === "Wajib" ? "yellow" : "green"}>{record?.wajib}</Tag>,
         },
     ];
 
@@ -250,10 +261,50 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
         router.push(router.asPath);
     };
 
+    const handleSubmit = async (values) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: isEdit ? "Data akan dirubah" : "Data akan disimpan",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    if (isEdit) {
+                        const res = await siswaService.edit(values, id)
+                    } else {
+                        const res = await ekstrakurikulerService.create(values)
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: isEdit ? "Data berhasil diupdate" : "Data berhasil disimpan"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch (err) {
+                    console.log(err);
+                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        })
+    }
+
     return (
         <div>
-            <Typography.Title level={2}>Data Ekstrakurikuler</Typography.Title>
-            <div className="my-5 flex items-center justify-between">
+            <Typography.Title level={2} style={{ margin: 0, padding: 0 }}>Data Ekstrakurikuler</Typography.Title>
+            <div className="mb-5 flex items-center justify-between">
                 <Breadcrumb
                     items={[
                         {
@@ -265,17 +316,18 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
                     ]}
                 />
                 <Space>
-                    <Link
+                    {/* <Link
                         href={{
                             pathname: "/ekstrakurikuler/tambah",
-                        }}>
-                        <Button
-                            type="default"
-                            icon={<DeleteOutlined />}
-                            size="middle">
-                            Tambah
-                        </Button>
-                    </Link>
+                        }}> */}
+                    <Button
+                        onClick={() => setOpen(true)}
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        size="middle">
+                        Tambah
+                    </Button>
+                    {/* </Link> */}
                     {selectedRow.length > 0 && (
                         <Popconfirm
                             title="Delete the task"
@@ -293,7 +345,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
                 </Space>
             </div>
             {pending.length > 0 && (
-                <div>
+                <div className='mb-5'>
                     <Alert
                         message="Pemberitahuan"
                         showIcon
@@ -343,24 +395,137 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
                     )}
                 </div>
             ) : (
-                <Table
-                    bordered
-                    size="large"
-                    rowSelection={{
-                        type: "checkbox",
-                        ...rowSelection,
-                    }}
-                    style={{
-                        height: "100",
-                        marginTop: 10,
-                    }}
-                    columns={columns}
-                    dataSource={data}
-                    scroll={{
-                        x: "fit",
-                    }}
-                />
+                <Card title="Data Ekstrakurikuler">
+                    <Table
+                        bordered
+                        size="small"
+                        // rowSelection={{
+                        //     type: "checkbox",
+                        //     ...rowSelection,
+                        // }}
+                        style={{
+                            height: "100",
+                            marginTop: 10,
+                        }}
+                        columns={columns}
+                        dataSource={data}
+                        scroll={{
+                            x: "fit",
+                        }}
+                    />
+                </Card>
             )}
+
+            <Modal centered open={open} onCancel={handleClose} title="Form Ekstrakurikuler" width={1200} footer={<Button type='primary' icon={<SaveOutlined />} onClick={() => form.submit()}>Submit</Button>}>
+                <Card style={{ margin: 20 }}>
+                    <Form form={form} onFinish={handleSubmit} labelAlign='left' colon={false} labelWrap labelCol={{ span: 6 }}>
+                        <Row gutter={16}
+                        >
+                            <Col span={12}>
+                                <Form.Item label="Nama Ekstrakurikuler" name="name" required rules={[
+                                    {
+                                        message: "Mohon isi nama ekstrakurikuler",
+                                        required: true
+                                    }
+                                ]}>
+                                    <Input placeholder='Nama Ekstrakurikuler' />
+                                </Form.Item>
+                                <Form.Item label="Lokasi" name="lokasi" required rules={[
+                                    {
+                                        message: "Mohon isi lokasi",
+                                        required: true
+                                    }
+                                ]}>
+                                    <Input placeholder='Nama Lokasi' />
+                                </Form.Item>
+                                <Form.Item
+                                    required
+                                    rules={[
+                                        {
+                                            message: "Mohon pilih waktu",
+                                            required: true
+                                        }
+                                    ]}
+                                    label="Waktu"
+                                    name="waktu" >
+                                    <TimePicker.RangePicker format="HH:mm" style={{ width: "100%", }} />
+                                </Form.Item>
+                                <Form.Item
+                                    required
+                                    rules={[
+                                        {
+                                            message: "Mohon pilih wajib atau pilihan",
+                                            required: true
+                                        }
+                                    ]}
+                                    label="Wajib"
+                                    name="wajib">
+                                    <Radio.Group buttonStyle='solid' optionType='button'>
+                                        <Radio value={true}>Wajib</Radio>
+                                        <Radio value={false}>Pilihan</Radio>
+                                    </Radio.Group>
+                                </Form.Item>
+
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item label="Pengajar" name="pengajar" required rules={[
+                                    {
+                                        message: "Mohon pilih pengajar",
+                                        required: true
+                                    }
+                                ]}>
+                                    <Select placeholder="Pengajar" options={pengajar.data.map(item => ({
+                                        value: item._id,
+                                        label: item.nama
+                                    }))} />
+                                </Form.Item>
+                                <Form.Item label="Hari" name="hari" required rules={[
+                                    {
+                                        message: "Mohon pilih hari",
+                                        required: true
+                                    }
+                                ]}>
+                                    <Select placeholder="Hari" options={[
+                                        {
+                                            label: "Senin",
+                                            value: "Senin"
+                                        },
+                                        {
+                                            label: "Selasa",
+                                            value: "Selasa"
+                                        },
+                                        {
+                                            label: "Rabu",
+                                            value: "Rabu"
+                                        },
+                                        {
+                                            label: "Kamis",
+                                            value: "Kamis"
+                                        },
+                                        {
+                                            label: "Jumat",
+                                            value: "Jumat"
+                                        },
+                                        {
+                                            label: "Sabtu",
+                                            value: "Sabtu"
+                                        },
+                                        {
+                                            label: "Minggu",
+                                            value: "Minggu"
+                                        },
+                                    ]} />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Note"
+                                    name="note">
+                                    <Input.TextArea placeholder='Note' />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                </Card>
+            </Modal>
         </div>
     );
 }
@@ -368,6 +533,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler }) {
 export async function getServerSideProps(ctx) {
     const session = await getSession(ctx);
     const { data } = await http.get('/pengajar/ekstrakurikuler')
+    const { data: pengajar } = await http.get('/admin/pengajar')
 
     if (!session) {
         return {
@@ -381,7 +547,8 @@ export async function getServerSideProps(ctx) {
 
     return {
         props: {
-            ekstrakurikuler: data
+            ekstrakurikuler: data,
+            pengajar: pengajar
         },
     };
 }

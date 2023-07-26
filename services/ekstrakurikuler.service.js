@@ -6,6 +6,12 @@ const ekstrakurikulerService = {
 
         return data;
     },
+
+    async create(payload) {
+        const { data } = await http.post('/ekstrakurikuler', payload)
+
+        return data
+    }
 };
 
 export default ekstrakurikulerService;
