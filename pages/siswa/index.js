@@ -626,12 +626,12 @@ export async function getServerSideProps(ctx) {
     if (!session) {
         return {
             redirect: {
-                permanent: false,
                 destination: "/login",
             },
             props: {},
         };
     }
+
 
     return {
         props: {
