@@ -3,7 +3,6 @@ Login.layout = "L2";
 import useLoginContext from "@/context/useLoginContext";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Skeleton, Spin, Typography } from "antd";
-import { getSession } from "next-auth/react";
 import Head from "next/head";
 
 const { Title, Text } = Typography;
@@ -92,22 +91,4 @@ export default function Login() {
         </>
 
     );
-}
-
-export async function getServerSideProps(ctx) {
-    const session = await getSession(ctx);
-
-    if (session) {
-        return {
-            redirect: {
-                permanent: false,
-                destination: "/",
-            },
-            props: {},
-        };
-    }
-
-    return {
-        props: {},
-    };
 }
