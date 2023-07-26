@@ -16,7 +16,7 @@ const layouts = {
     L2: Layout2,
 };
 
-function MyApp({ Component, pageProps, session }) {
+export default function MyApp({ Component, pageProps, session }) {
     const Layout = layouts[Component.layout] || (({ children }) => <>{children}</>);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -79,4 +79,3 @@ function MyApp({ Component, pageProps, session }) {
     );
 }
 
-export default MyApp;
