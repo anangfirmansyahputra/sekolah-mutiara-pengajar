@@ -111,14 +111,14 @@ export async function getServerSideProps(ctx) {
     const { data: pengajar } = await http.get('/admin/pengajar')
     const { data: pengumuman } = await http.get('/admin/pengumuman')
 
-    if (!session) {
-        return {
-            redirect: {
-                destination: "/login",
-            },
-            props: {},
-        };
-    }
+    // if (!session) {
+    //     return {
+    //         redirect: {
+    //             destination: "/login",
+    //         },
+    //         props: {},
+    //     };
+    // }
 
     return {
         props: {
