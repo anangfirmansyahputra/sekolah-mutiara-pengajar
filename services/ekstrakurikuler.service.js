@@ -11,6 +11,24 @@ const ekstrakurikulerService = {
         const { data } = await http.post('/ekstrakurikuler', payload)
 
         return data
+    },
+
+    async find(id) {
+        const { data } = await http.get(`/ekstrakurikuler/${id}`)
+
+        return data
+    },
+
+    async update(id, payload) {
+        const { data } = await http.put(`/ekstrakurikuler/${id}`, payload)
+
+        return data
+    },
+
+    async deleteOne(id) {
+        const { data } = await http.delete(`/ekstrakurikuler/${id}`)
+
+        return data
     }
 };
 

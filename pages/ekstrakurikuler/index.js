@@ -1,11 +1,12 @@
 import http from '@/plugin/https';
 import ekstrakurikulerService from "@/services/ekstrakurikuler.service";
 import siswaService from '@/services/siswa.service';
-import { DeleteOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
-import { Alert, Breadcrumb, Button, Card, Col, Form, Input, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, TimePicker, Typography, message } from "antd";
+import { DeleteOutlined, DownOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
+import { Alert, Breadcrumb, Button, Card, Col, Dropdown, Form, Input, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, TimePicker, Typography, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import { getSession, useSession } from "next-auth/react";
+import Head from 'next/head';
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
@@ -15,8 +16,6 @@ import Swal from "sweetalert2";
 Ekstrakurikuler.layout = "L1";
 
 export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
-    console.log(pengajar);
-
     const [form] = Form.useForm()
 
     const [searchText, setSearchText] = useState("");
@@ -33,7 +32,10 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
     const [id, setId] = useState(null)
 
     const handleClose = () => {
+        form.resetFields()
         setOpen(false)
+        setId(null)
+        setIsEdit(false)
     }
 
     ekstrakurikuler?.data.map(
@@ -152,6 +154,102 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
         headers: { "admin-token": `${token}` },
     };
 
+    const handleEdit = async (id) => {
+        try {
+            setOpen(true)
+            setId(id)
+            setIsEdit(true)
+
+
+            const res = await ekstrakurikulerService.find(id)
+            const startTime = dayjs(res.data?.waktu[0]);
+            const endTime = dayjs(res.data?.waktu[1]);
+            form.setFieldsValue({ ...res.data, waktu: [startTime, endTime] });
+
+        } catch (err) {
+            console.log(err);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Server sedang error, silahkan coba kembali"
+            })
+        }
+    }
+
+    const handleDelete = async (id) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: "Data akan dihapus permanen",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await ekstrakurikulerService.deleteOne(id)
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: "Data berhasil dihapus"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch (err) {
+                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    Swal.fire({
+                        icon: 'error',
+                        title: "Gagal",
+                        text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    })
+                }
+            } else if (result.isDenied) {
+            }
+        }
+        )
+    }
+
+    const items = (id) => {
+        return [
+            {
+                label: (
+                    <a onClick={e => {
+                        e.preventDefault()
+                    }}>
+                        Pendaftar
+                    </a>
+                ),
+                key: '0',
+            },
+            {
+                label: (
+                    <a onClick={e => {
+                        e.preventDefault()
+                        handleEdit(id)
+                    }}>
+                        Edit
+                    </a>
+                ),
+                key: '1',
+            },
+            {
+                label: (
+                    <a onClick={e => {
+                        e.preventDefault()
+                        handleDelete(id)
+                    }}>
+                        Delete
+                    </a>
+                ),
+                key: '2',
+                danger: true
+            },
+        ];
+    }
+
     const columns = [
         {
             title: "Nama",
@@ -212,6 +310,25 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
             sortDirections: ["descend", "ascend"],
             render: (_, record) => <Tag color={record.wajib === "Wajib" ? "yellow" : "green"}>{record?.wajib}</Tag>,
         },
+        {
+            title: "Aksi",
+            fixed: "right",
+            width: "100px",
+            render: (_, record) => (
+                <Dropdown
+                    menu={{
+                        items: items(record.key)
+                    }}
+                >
+                    <a onClick={(e) => e.preventDefault()}>
+                        <Space>
+                            Aksi
+                            <DownOutlined />
+                        </Space>
+                    </a>
+                </Dropdown>
+            )
+        }
     ];
 
     const rowSelection = {
@@ -273,7 +390,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
             if (result.isConfirmed) {
                 try {
                     if (isEdit) {
-                        const res = await siswaService.edit(values, id)
+                        const res = await ekstrakurikulerService.update(id, values)
                     } else {
                         const res = await ekstrakurikulerService.create(values)
                     }
@@ -302,7 +419,10 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
     }
 
     return (
-        <div>
+        <>
+            <Head>
+                <title>Ekstrakurikuler | Sistem Informasi Sekolah Mutiara</title>
+            </Head>
             <Typography.Title level={2} style={{ margin: 0, padding: 0 }}>Data Ekstrakurikuler</Typography.Title>
             <div className="mb-5 flex items-center justify-between">
                 <Breadcrumb
@@ -410,7 +530,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
                         columns={columns}
                         dataSource={data}
                         scroll={{
-                            x: "fit",
+                            x: 1000,
                         }}
                     />
                 </Card>
@@ -526,7 +646,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
                     </Form>
                 </Card>
             </Modal>
-        </div>
+        </>
     );
 }
 
@@ -538,7 +658,6 @@ export async function getServerSideProps(ctx) {
     if (!session) {
         return {
             redirect: {
-                permanent: false,
                 destination: "/login",
             },
             props: {},
