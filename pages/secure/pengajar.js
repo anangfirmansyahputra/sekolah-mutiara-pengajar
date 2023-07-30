@@ -1,6 +1,5 @@
 import useDeletePengajarContext from "@/context/useDeletePengajarContext";
 import http from '@/plugin/https';
-import kelasService from "@/services/kelas.service";
 import matpelService from "@/services/matpel.service";
 import pengajarService from "@/services/pengajar.service";
 import { DeleteOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
@@ -21,13 +20,14 @@ export default function Pengajar({ pengajar, matpel }) {
     const [form] = Form.useForm()
     const { push, asPath } = useRouter();
     const { data: session } = useSession();
+    const router = useRouter()
 
 
     // State
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const [loadingFirst, setLoadingFirst] = useState(true);
-    const { handleDelete, loading } = useDeletePengajarContext();
+    // const { handleDelete, loading } = useDeletePengajarContext();
     const searchInput = useRef(null);
     const [open, setOpen] = useState(false)
     const [isEdit, setIsEdit] = useState(false)
@@ -55,6 +55,9 @@ export default function Pengajar({ pengajar, matpel }) {
 
     const handleCancel = () => {
         setOpen(false)
+        setId(null)
+        setIsEdit(false)
+        form.resetFields()
     }
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -239,8 +242,8 @@ export default function Pengajar({ pengajar, matpel }) {
             width: "150px",
             render: (_, record) => (
                 <>
-                    <Button type="link">Edit</Button>
-                    <Button type="link" danger>Hapus</Button>
+                    <Button type="link" onClick={() => handleEdit(record.key)}>Edit</Button>
+                    <Button type="link" danger onClick={() => handleDelete(record.key)}>Hapus</Button>
                 </>
             )
         }
@@ -270,7 +273,7 @@ export default function Pengajar({ pengajar, matpel }) {
             if (result.isConfirmed) {
                 try {
                     if (isEdit) {
-                        const res = await siswaService.edit(values, id)
+                        const res = await pengajarService.update(id, values)
                     } else {
                         const res = await pengajarService.create(values)
                     }
@@ -286,11 +289,12 @@ export default function Pengajar({ pengajar, matpel }) {
                     setIsEdit(false)
                 } catch (err) {
                     console.log(err);
-                    const messageErr = JSON.parse(err?.request?.response)?.message
+                    const messageErr = JSON?.parse(err?.request?.response)?.message
                     Swal.fire({
                         icon: 'error',
                         title: "Gagal",
                         text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                        // text: "Data gagal disimpan, coba ganti data dan coba kembali!"
                     })
                 }
             } else if (result.isDenied) {
@@ -298,65 +302,97 @@ export default function Pengajar({ pengajar, matpel }) {
         })
     }
 
+    const handleEdit = async (id) => {
+        try {
+            setIsEdit(true)
+            setOpen(true)
+            setId(id)
+            const { data } = await pengajarService.find(id)
+            const formattedDate = dayjs(data.tgl).format("YYYY-MM-DD");
+            form.setFieldsValue({ ...data, tgl: dayjs(formattedDate) });
+
+        } catch (err) {
+            console.log(err);
+            Swal.fire({
+                icon: 'error',
+                title: "Gagal",
+                text: "Server sedang mengalami gangguan, silahkan coba kembali"
+            })
+        }
+    }
+
+    const handleDelete = async (id) => {
+        Swal.fire({
+            icon: "question",
+            title: "Apa anda yakin?",
+            text: "Data akan dihapus permanen",
+            showDenyButton: true,
+            confirmButtonText: 'Yakin',
+            denyButtonText: `Tidak`,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await pengajarService.deleteOne(id)
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Sukses",
+                        text: "Data berhasil dihapus"
+                    })
+                    router.push(router.asPath)
+                    setOpen(false)
+                    form.resetFields()
+                    setId(null)
+                    setIsEdit(false)
+                } catch (err) {
+                    console.log(err);
+                    // const messageErr = JSON.parse(err?.request?.response)?.message
+                    // Swal.fire({
+                    //     icon: 'error',
+                    //     title: "Gagal",
+                    //     text: messageErr ?? "Data gagal disimpan, coba ganti data dan coba kembali!"
+                    // })
+                }
+            } else if (result.isDenied) {
+            }
+        }
+        )
+    }
+
+
+
 
     return (
         <>
             <Head>
                 <title>Pengajar | Sistem Informasi Mutiara</title>
             </Head>
-            <Content style={{ margin: "0 16px" }}>
-                <div className="flex justify-between items-center">
-                    <div>
-                        <Typography.Title
-                            level={3}
-                            style={{ margin: 0, padding: 0 }}>
-                            Pengajar
-                        </Typography.Title>
-                        <Breadcrumb style={{ margin: "0 0 16px" }} items={[
-                            {
-                                title: <Link href={{
-                                    pathname: "/dashboard"
-                                }}>Dashboard</Link>
-                            },
-                            {
-                                title: "Pengajar"
-                            }
-                        ]} />
-                    </div>
-                    <Space>
-                        {/* <Link
-                            href={{
-                                pathname: "/pengajar/tambah",
-                            }}> */}
-                        <Button
-                            onClick={() => setOpen(true)}
-                            type="primary"
-                            icon={<PlusOutlined />}>
-                            Pengajar
-                        </Button>
-                        {/* </Link> */}
-                        {selectedRow?.length > 0 && (
-                            <Popconfirm
-                                title="Delete Data"
-                                description="Are you sure to delete this data?"
-                                onConfirm={confirm}
-                                okText="Yes"
-                                cancelText="No">
-                                <Button danger type="primary" icon={<DeleteOutlined />}>Hapus</Button>
-                            </Popconfirm>
-                        )}
-                    </Space>
+            <Content>
+                <Typography.Title level={2} style={{ margin: 0, padding: 0 }}>Pengajar</Typography.Title>
+                <div className="mb-5 flex items-center justify-between">
+                    <Breadcrumb items={[
+                        {
+                            title: <Link href={{
+                                pathname: "/dashboard"
+                            }}>Dashboard</Link>
+                        },
+                        {
+                            title: "Pengajar"
+                        }
+                    ]} />
+
+                    <Button
+                        onClick={() => setOpen(true)}
+                        type="primary"
+                        icon={<PlusOutlined />}>
+                        Pengajar
+                    </Button>
                 </div>
-                <Card>
+                <Card title="Data Pengajar">
                     <Table
                         loading={loadingFirst}
                         sticky
                         bordered
                         size="small"
-                        // rowSelection={{
-                        //     type: "checkbox",
-                        //     ...rowSelection,
-                        // }}
                         style={{
                             height: "100",
                         }}
@@ -447,10 +483,11 @@ export async function getServerSideProps(ctx) {
     const { data } = await http.get('/admin/pengajar')
     const { data: matpel } = await matpelService.get()
     const session = await getSession(ctx)
+
     if (!session) {
         return {
             redirect: {
-                destination: "/login",
+                destination: "/auth/login",
             },
             props: {},
         };
