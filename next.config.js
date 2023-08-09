@@ -1,6 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-}
+    reactStrictMode: true,
+    publicRuntimeConfig: {
+        apiUrl: process.env.API_URL,
+    },
+};
 
-module.exports = nextConfig
+module.exports = {
+    webpack: (config) => {
+        config.resolve.alias["@emotion/core"] = "@emotion/react";
+        return config;
+    },
+};
+
+module.exports = nextConfig;
