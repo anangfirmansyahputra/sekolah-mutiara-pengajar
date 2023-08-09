@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -20,96 +18,10 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  margin: 0;
-  padding: 0;
-  /* background: linear-gradient(
+  background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
-    rgb(var(--background-start-rgb)); */
+    rgb(var(--background-start-rgb));
 }
-
-.swal2-container {
-  font-family: 'Roboto', sans-serif;
-}
-
-.site-header {
-  background-color: #008846 !important;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  /* justify-content: space-between !important; */
-  justify-content: end !important;
-}
-
-.ant-table-cell {
-  padding: 6px 8px !important;
-}
-
-.ant-table-wrapper .ant-table-pagination.ant-pagination {
-  margin-bottom: 0;
-}
-
-.ant-form-vertical .ant-form-item-label {
-  padding-bottom: 4px;
-}
-
-.ant-layout-sider .ant-menu-item,
-.ant-layout-sider .ant-menu-submenu-title {
-  height: 32px !important;
-  line-height: 32px !important;
-}
-
-.ant-layout-sider .ant-menu-item .anticon,
-.ant-layout-sider .ant-menu-submenu-title .anticon {
-  font-size: 16px !important;
-  width: 16px !important;
-  text-align: center;
-}
-
-.ant-layout-sider .ant-menu-sub .ant-menu-item,
-.ant-layout-sider .ant-menu-sub .ant-menu-submenu .ant-menu-submenu-title {
-  padding-left: 40px !important;
-}
-
-.ant-layout-sider .ant-menu-sub .ant-menu-submenu .ant-menu-item {
-  padding-left: 60px !important;
-}
-
-.ant-modal .ant-modal-content,
-.ant-modal.ant-modal-confirm .ant-modal-body {
-  padding: 0;
-}
-
-.ant-modal .ant-modal-header {
-  background-color: #008846;
-  padding: 8px 12px;
-  margin-bottom: 0;
-}
-
-.ant-modal .ant-modal-header .ant-modal-title {
-  color: #ffffff;
-}
-
-.ant-table-cell {
-  padding: 6px 8px !important;
-}
-
-.ant-form-vertical .ant-form-item-label {
-  padding-bottom: 4px;
-}
-
-.ant-modal-header {
-  padding: 20px !important;
-}
-
-.ant-modal-footer {
-  padding: 20px;
-}
-
-/* .ant-typography {
-  margin-bottom: 0px !important;
-} */
-
-/* Sweetalert2 */
