@@ -2,7 +2,7 @@ import UpdateModal from '@/components/modals/UpdateModal';
 import pengumumanService from '@/services/pengumuman.service';
 import { Alert, Button, Card, Descriptions, Typography } from 'antd'
 import dayjs from 'dayjs';
-import { useSession } from 'next-auth/react'
+import { getSession, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import { useState } from 'react';
 
@@ -99,6 +99,17 @@ export async function getServerSideProps(ctx) {
     const pengumuman = await pengumumanService.get({
         role: "pengajar"
     })
+
+    const session = await getSession(ctx);
+
+    if (!session) {
+        return {
+            redirect: {
+                destination: "/auth/login",
+            },
+            props: {},
+        };
+    }
 
     return {
         props: {
