@@ -31,6 +31,12 @@ const pengajarService = {
         return data;
     },
 
+    async updateBiodata(payload) {
+        const { data } = await http.post('/pengajar/update', payload)
+
+        return data
+    }
+
 
 };
 

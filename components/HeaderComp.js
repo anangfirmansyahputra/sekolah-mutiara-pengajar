@@ -50,7 +50,7 @@ export default function HeaderComp() {
                             }}
                         />
                     }>
-                    <span className="text-white">{data?.user?.user?.username}</span>
+                    <span className="text-white">{data?.user?.user?.data?.nama}</span>
                     <DownOutlined
                         style={{
                             color: "white",

@@ -25,6 +25,12 @@ const pengumumanService = {
         const { data } = await http.delete(`${path}/${id}`)
 
         return data
+    },
+
+    async get(role) {
+        const { data } = await http.post(`${path}/all`, role)
+
+        return data
     }
 }
 
