@@ -84,11 +84,13 @@ export default function Dashboard(props) {
                         </Descriptions>
                     </Card>
                 </div>
-                <Card className="mt-5">
-                    {pengumuman?.map(item => (
-                        <Alert message={item.title} description={item.content} type="warning" />
-                    ))}
-                </Card>
+                {pengumuman?.length > 0 && (
+                    <Card className="mt-5">
+                        {pengumuman?.map(item => (
+                            <Alert message={item.title} description={item.content} type="warning" />
+                        ))}
+                    </Card>
+                )}
             </div>
             <UpdateModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} data={user} />
         </>

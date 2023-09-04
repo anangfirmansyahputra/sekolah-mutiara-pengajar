@@ -1,9 +1,8 @@
 import PendaftarModal from '@/components/modals/PendaftarModal';
 import http from '@/plugin/https';
 import ekstrakurikulerService from "@/services/ekstrakurikuler.service";
-import siswaService from '@/services/siswa.service';
 import { DeleteOutlined, DownOutlined, PlusOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
-import { Alert, Breadcrumb, Button, Card, Col, Dropdown, Form, Input, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, TimePicker, Typography, message } from "antd";
+import { Breadcrumb, Button, Card, Col, Dropdown, Form, Input, Modal, Popconfirm, Radio, Row, Select, Space, Table, Tag, TimePicker, Typography, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import { getSession, useSession } from "next-auth/react";
@@ -16,7 +15,7 @@ import Swal from "sweetalert2";
 
 Ekstrakurikuler.layout = "L1";
 
-export default function Ekstrakurikuler({ pengajar }) {
+export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
     const [form] = Form.useForm()
 
     const [searchText, setSearchText] = useState("");
@@ -31,7 +30,7 @@ export default function Ekstrakurikuler({ pengajar }) {
     const [open, setOpen] = useState(false)
     const [isEdit, setIsEdit] = useState(false)
     const [id, setId] = useState(null)
-    const ekstrakurikuler = session?.user?.user?.data?.ekstrakurikuler
+    // const ekstrakurikuler = session?.user?.user?.data?.ekstrakurikuler
 
     const [pendaftarModal, setPendaftarModal] = useState(false)
     const [dataPendaftar, setDataPendaftar] = useState(null)
@@ -605,6 +604,11 @@ export async function getServerSideProps(ctx) {
     const { data } = await http.get('/pengajar/ekstrakurikuler')
     const { data: pengajar } = await http.get('/admin/pengajar')
 
+    const id = session.user.user.data._id
+
+    const ekstrakurikuler = data.data.filter(item => item.pengajar._id === id)
+
+
     if (!session) {
         return {
             redirect: {
@@ -616,7 +620,7 @@ export async function getServerSideProps(ctx) {
 
     return {
         props: {
-            ekstrakurikuler: data,
+            ekstrakurikuler: ekstrakurikuler,
             pengajar: pengajar
         },
     };
