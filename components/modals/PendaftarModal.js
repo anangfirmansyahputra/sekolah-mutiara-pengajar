@@ -1,6 +1,5 @@
 import { Card, Col, Form, Input, Modal, Row, Table } from "antd";
 import dayjs from "dayjs";
-import { useEffect } from "react";
 
 export default function PendaftarModal(props) {
     const [form] = Form.useForm()
@@ -53,7 +52,7 @@ export default function PendaftarModal(props) {
     ]
 
     return (
-        <Modal open={props.open} width={1200} onCancel={props.onCancel} title="Data Pendaftar">
+        <Modal open={props.open} width={1200} onCancel={props.onCancel} title="Data Pendaftar" onOk={props.onCancel}>
             <Card className="m-[20px]">
                 <Form form={form} layout="vertical" colon={false}>
                     <Row gutter={16}>

@@ -391,12 +391,6 @@ export default function Gallery({ gallery, ekstrakurikuler }) {
                             },
                         ]}
                     />
-                    <Button
-                        onClick={() => setOpen(true)}
-                        type="primary"
-                        icon={<PlusOutlined />}>
-                        Tambah
-                    </Button>
                 </div>
                 <Card title="Data Gallery">
                     <Table

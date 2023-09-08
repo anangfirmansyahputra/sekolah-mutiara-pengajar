@@ -2,7 +2,7 @@ import absenService from "@/services/absen.service";
 import { CheckOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table } from "antd";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 
 export default function AbsenModal(props) {
@@ -47,6 +47,8 @@ export default function AbsenModal(props) {
         pertemuan13: item?.nilai?.[props?.data?.wajib ? "ekstrakurikulerWajib" : "ekstrakurikulerPilihan"]?.kehadiran[12],
         pertemuan14: item?.nilai?.[props?.data?.wajib ? "ekstrakurikulerWajib" : "ekstrakurikulerPilihan"]?.kehadiran[13],
     }))
+
+    console.log(props?.data?.pendaftar);
 
     // let absenColumn = []
 
@@ -373,15 +375,10 @@ export default function AbsenModal(props) {
             if (result.isConfirmed) {
                 const payload = {
                     listSiswa: selectedRowKeys,
-                    pertemuan: values.pertemuan,
+                    pertemuan: values.pertemuan ?? 0,
                     ekstrakurikuler: props.data._id
                 }
-
-                // console.log(payload);
-
                 setLoading(true)
-
-
                 try {
                     const res = await absenService.absen(payload)
 
@@ -413,6 +410,11 @@ export default function AbsenModal(props) {
             }
         })
     }
+
+
+    useEffect(() => {
+        formAbsen.setFieldsValue({ pertemuan: 0 })
+    }, [])
 
     return (
         <>
