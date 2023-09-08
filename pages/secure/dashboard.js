@@ -98,11 +98,10 @@ export default function Dashboard(props) {
 }
 
 export async function getServerSideProps(ctx) {
+    const session = await getSession(ctx);
     const pengumuman = await pengumumanService.get({
         role: "pengajar"
     })
-
-    const session = await getSession(ctx);
 
     if (!session) {
         return {
