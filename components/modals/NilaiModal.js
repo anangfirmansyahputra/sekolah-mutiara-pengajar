@@ -12,12 +12,51 @@ export default function NilaiModal(props) {
     const [open, setOpen] = useState(false)
     const [selectSiswa, setSelecSiswa] = useState(null)
 
+    const totalNilai = (akademik, data) => {
+        const nilaiAkademik = (akademik * 60) / 100
+        // const nilaiAbsen = ((absen / 14) * 100) * 40 / 100
+        const totalTrue = data?.filter((item) => item === true).length;
+
+        // Menghitung total panjang array
+        const totalLength = data?.length;
+
+        // Menghitung persentase nilai true
+        const percentageTrue = Math.ceil(((totalTrue / totalLength) * 100) * 40 / 100);
+
+
+        const nilaiTotal = percentageTrue + nilaiAkademik
+
+        if (nilaiTotal >= 86) {
+            return 'A'
+        } else if (nilaiTotal >= 76 && nilaiTotal <= 85) {
+            return 'B'
+        } else {
+            return 'C'
+        }
+    }
+
+    const nilaiAbsen = (data) => {
+        const totalTrue = data?.filter((item) => item === true).length;
+
+        // Menghitung total panjang array
+        const totalLength = data?.length;
+
+        // Menghitung persentase nilai true
+        const percentageTrue = Math.ceil((totalTrue / totalLength) * 100);
+
+        return percentageTrue
+    }
+
     const data = props?.data?.pendaftar?.map(item => ({
         key: item?._id,
         name: item?.name,
         nis: item?.nis,
         kelas: `${item?.kelas?.kelas} ${item?.kelas?.name}`,
-        nilai: item?.nilai?.[props?.data?.wajib ? 'ekstrakurikulerWajib' : 'ekstrakurikulerPilihan']?.nilai
+        nilai: item?.nilai?.[props?.data?.wajib ? 'ekstrakurikulerWajib' : 'ekstrakurikulerPilihan']?.nilai,
+        absen: nilaiAbsen(item?.nilai?.[props?.data?.wajib ? 'ekstrakurikulerWajib' : 'ekstrakurikulerPilihan']?.kehadiran),
+        total: totalNilai(item?.nilai?.[props?.data?.wajib ? 'ekstrakurikulerWajib' : 'ekstrakurikulerPilihan']?.nilai,
+            item?.nilai?.[props?.data?.wajib ? 'ekstrakurikulerWajib' : 'ekstrakurikulerPilihan']?.kehadiran
+        )
     }))
 
     const handleNilai = (id, name) => {
@@ -52,6 +91,16 @@ export default function NilaiModal(props) {
             title: "Nilai",
             key: "nilai",
             dataIndex: "nilai"
+        },
+        {
+            title: "Nilai Absen",
+            key: "absen",
+            dataIndex: "absen"
+        },
+        {
+            title: "Nilai Total",
+            key: "total",
+            dataIndex: "total"
         },
         {
             title: "Aksi",

@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { getSession, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import { useState } from 'react';
+import http from '@/plugin/https'
 
 Dashboard.layout = "L1";
 
@@ -12,7 +13,12 @@ Dashboard.layout = "L1";
 
 export default function Dashboard(props) {
     const { data } = useSession()
-    console.log(data);
+    console.log(props.ekstrakurikuler);
+
+    const isAntrian = props.ekstrakurikuler.filter(item => item.antrian.length > 0)
+
+    console.log(isAntrian);
+
     const user = data?.user?.user?.data
     const items = [
         {
@@ -65,6 +71,14 @@ export default function Dashboard(props) {
         setIsModalOpen(false);
     };
 
+    const onApprove = async (siswa, ekstraId) => {
+        try {
+
+        } catch (err) {
+
+        }
+    }
+
     return (
         <>
             <Head>
@@ -91,6 +105,39 @@ export default function Dashboard(props) {
                         ))}
                     </Card>
                 )}
+                {isAntrian.length > 0 && (
+                    <Card className='mt-5' title="Ada siswa yang menunggu approve">
+                        {isAntrian.map(item => (
+                            <div>
+                                <h1>{item.name}</h1>
+                                <div>
+                                    {item.antrian.map(siswa => (
+                                        <Alert type='warning' description={
+                                            <div className='flex items-center justify-between'>
+                                                <div>
+                                                    <span className='col-span-4 font-semibold text-sm'>
+                                                        {siswa.name}
+                                                    </span>
+                                                    <span className='ml-2 text-gray-500 text-sm'>
+                                                        ({siswa.nis})
+                                                    </span>
+                                                    <div className='text-slate-800'>
+                                                        {`${siswa.kelas.kelas} ${siswa.kelas.name}`}
+                                                    </div>
+                                                </div>
+                                                <div className='flex gap-3'>
+                                                    <Button type='primary'>Approve</Button>
+                                                    <Button type='default'>Approve</Button>
+                                                </div>
+                                            </div>
+                                        }>
+                                        </Alert>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </Card>
+                )}
             </div>
             <UpdateModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} data={user} />
         </>
@@ -99,9 +146,14 @@ export default function Dashboard(props) {
 
 export async function getServerSideProps(ctx) {
     const session = await getSession(ctx);
+    const { data } = await http.get('/pengajar/ekstrakurikuler')
     const pengumuman = await pengumumanService.get({
         role: "pengajar"
     })
+
+    const id = session.user.user.data?._id
+
+    const ekstrakurikuler = data.data.filter(item => item.pengajar._id === id)
 
     if (!session) {
         return {
@@ -114,7 +166,8 @@ export async function getServerSideProps(ctx) {
 
     return {
         props: {
-            data: pengumuman
+            data: pengumuman,
+            ekstrakurikuler
         }
     }
 }
