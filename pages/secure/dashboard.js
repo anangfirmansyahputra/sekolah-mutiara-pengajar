@@ -166,7 +166,7 @@ export default function Dashboard(props) {
             {pengumuman?.length > 0 && (
                <Card className="mt-5">
                   {pengumuman?.map(item => (
-                     <Alert message={item.title} description={item.content} type="warning" />
+                     <Alert message={item.title} className='mb-3' description={item.content} type="warning" />
                   ))}
                </Card>
             )}
