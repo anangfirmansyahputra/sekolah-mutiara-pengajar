@@ -362,7 +362,7 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
 export async function getServerSideProps(ctx) {
     const session = await getSession(ctx);
     const { data: siswa } = await siswaService.get()
-    const { data: ekstrakurikuler } = await ekstrakurikulerService.get()
+    const { data } = await ekstrakurikulerService.get()
 
     if (!session) {
         return {
@@ -372,6 +372,12 @@ export async function getServerSideProps(ctx) {
             props: {},
         };
     }
+
+    const id = session.user.user.data?._id
+
+    const ekstrakurikuler = data.filter(item => item.pengajar._id === id)
+
+
 
     return {
         props: {

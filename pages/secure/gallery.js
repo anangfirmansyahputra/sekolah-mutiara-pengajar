@@ -164,34 +164,11 @@ export default function Gallery({ gallery, ekstrakurikuler }) {
         return [
             {
                 label: (
-                    <a onClick={e => {
-                        e.preventDefault()
-                        handleEdit(id)
-                    }}>
-                        Edit
-                    </a>
-                ),
-                key: '1',
-            },
-            {
-                label: (
                     <a rel="" target="_blank" href={link}>
                         Lihat
                     </a>
                 ),
                 key: '3',
-            },
-            {
-                label: (
-                    <a onClick={e => {
-                        e.preventDefault()
-                        handleDelete(id)
-                    }}>
-                        Delete
-                    </a>
-                ),
-                key: '2',
-                danger: true
             },
         ];
     }

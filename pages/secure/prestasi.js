@@ -296,21 +296,6 @@ export default function Prestasi({ kelas, prestasi, siswa, ekstrakurikuler }) {
                                     }}>
                                     <DownloadOutlined key="setting" />
                                 </Link>,
-                                <EditOutlined
-                                    key="edit"
-                                    onClick={() => {
-                                        handleEdit(item?._id)
-                                    }}
-                                />,
-                                <Popconfirm
-                                    title="Delete the task"
-                                    description="Are you sure to delete this task?"
-                                    onConfirm={() => confirm(item?._id)}
-                                    // onCancel={cancel}
-                                    okText="Yes"
-                                    cancelText="No">
-                                    <DeleteOutlined />
-                                </Popconfirm>,
                             ]}>
                             <Meta
                                 title={`${item?.deskripsi}`}
