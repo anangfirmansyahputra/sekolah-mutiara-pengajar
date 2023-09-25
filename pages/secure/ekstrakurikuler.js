@@ -616,7 +616,7 @@ export async function getServerSideProps(ctx) {
 
     const id = session.user.user.data?._id
 
-    const ekstrakurikuler = data.data.filter(item => item.pengajar._id === id)
+    const ekstrakurikuler = data.data.filter(item => item.pengajar?._id === id)
 
     return {
         props: {
