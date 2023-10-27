@@ -12,8 +12,8 @@ const items = [
         icon: <CalendarOutlined />,
     },
     {
-        label: "Absensi",
-        key: "absensi",
+        label: "Kelola Data Siswa",
+        key: "kelola-data-siswa",
         icon: <CarryOutOutlined />,
     },
     {

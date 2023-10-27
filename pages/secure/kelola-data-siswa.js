@@ -207,7 +207,7 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
             // ),
         },
         {
-            title: "Pengajar",
+            title: "Pembina",
             dataIndex: 'pengajar',
             key: "pengajar"
         },
@@ -217,7 +217,7 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
             key: "pendaftar"
         },
         {
-            title: "Tipe",
+            title: "Kategori",
             dataIndex: "wajib",
             key: "wajib",
             render: (_, record) => (
@@ -311,13 +311,13 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
     return (
         <>
             <Head>
-                <title>Absensi | Sistem Informasi Mutiara</title>
+                <title>Kelola Data Absensi | Sistem Informasi Mutiara</title>
             </Head>
             <Content>
                 <Typography.Title
                     level={2}
                     style={{ margin: "0", padding: 0 }}>
-                    Absensi
+                    Kelola Data Absensi
                 </Typography.Title>
                 <div className="mb-5 flex items-center justify-between">
                     <Breadcrumb style={{ margin: "0 0 16px" }} items={[
@@ -327,11 +327,11 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
                             }}>Dashboard</Link>
                         },
                         {
-                            title: "Absensi"
+                            title: "Kelola Data Absensi"
                         }
                     ]} />
                 </div>
-                <Card title="Data Absensi">
+                <Card title="Kelola Data Absensi">
                     <Table
                         bordered
                         size="small"

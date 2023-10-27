@@ -29,11 +29,11 @@ export default function Dashboard(props) {
          label: 'NIK',
          children: user?.nik,
       },
-      {
-         key: '3',
-         label: 'Mengajar',
-         children: user?.mengajar?.name,
-      },
+      // {
+      //    key: '3',
+      //    label: 'Mengajar',
+      //    children: user?.mengajar?.name,
+      // },
       {
          key: '4',
          label: "Tanggal Lahir",
@@ -154,8 +154,8 @@ export default function Dashboard(props) {
             <div className="mt-5">
                <Card>
                   <Descriptions column={2} bordered title={<div className="flex items-center justify-between">
-                     <span>Biodata</span>
-                     <Button type="primary" onClick={showModal}>Update Biodata</Button>
+                     <span>Biodata Diri</span>
+                     <Button type="primary" onClick={showModal}>Update Biodata Diri</Button>
                   </div>}>
                      {items.map(user => (
                         <Descriptions.Item label={user?.label} key={user.key}>{user?.children}</Descriptions.Item>

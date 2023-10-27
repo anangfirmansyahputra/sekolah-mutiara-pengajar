@@ -1,16 +1,31 @@
 import ekstrakurikulerService from "@/services/ekstrakurikuler.service";
 import nilaiService from "@/services/nilai.service";
-import { Button, Form, Input, InputNumber, Modal, Table, Card } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Form, Input, InputNumber, Modal, Table, Card, Space } from "antd";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Highlighter from "react-highlight-words";
 import Swal from "sweetalert2";
 
 export default function NilaiModal(props) {
     const [form] = Form.useForm()
     const router = useRouter()
+    const searchInput = useRef(null);
 
     const [open, setOpen] = useState(false)
     const [selectSiswa, setSelecSiswa] = useState(null)
+    const [searchedColumn, setSearchedColumn] = useState("")
+
+    const [searchText, setSearchText] = useState('');
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText('');
+    };
 
     const totalNilai = (akademik, data) => {
         const nilaiAkademik = (akademik * 70 / 100)
@@ -71,6 +86,94 @@ export default function NilaiModal(props) {
         form.resetFields()
     }
 
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+                onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    ref={searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                    style={{
+                        marginBottom: 8,
+                        display: "block",
+                    }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}>
+                        Search
+                    </Button>
+                    <Button
+                        onClick={() => clearFilters && handleReset(clearFilters)}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}>
+                        Reset
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            confirm({
+                                closeDropdown: false,
+                            });
+                            setSearchText(selectedKeys[0]);
+                            setSearchedColumn(dataIndex);
+                        }}>
+                        Filter
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            close();
+                        }}>
+                        close
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{
+                    color: filtered ? "#1890ff" : undefined,
+                }}
+            />
+        ),
+        onFilter: (value, record) => record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+        onFilterDropdownOpenChange: (visible) => {
+            if (visible) {
+                setTimeout(() => searchInput.current?.select(), 100);
+            }
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <Highlighter
+                    highlightStyle={{
+                        padding: 0,
+                    }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={text ? text.toString() : ""}
+                />
+            ) : (
+                text
+            ),
+    });
+
     const columns = [
         {
             title: "Nama",
@@ -85,7 +188,8 @@ export default function NilaiModal(props) {
         {
             title: "Kelas",
             key: "kelas",
-            dataIndex: "kelas"
+            dataIndex: "kelas",
+            ...getColumnSearchProps("kelas"),
         },
         {
             title: "Nilai",
@@ -155,11 +259,78 @@ export default function NilaiModal(props) {
         })
     }
 
+    const columns1 = [
+        {
+            title: 'Keterangan',
+            dataIndex: 'keterangan',
+            key: 'keterangan',
+        },
+        {
+            title: 'Persentase',
+            dataIndex: 'persentase',
+            key: 'persentase',
+        },
+    ];
+
+    const dataSource1 = [
+        {
+            key: '1',
+            keterangan: 'Nilai Absen',
+            persentase: '30%',
+        },
+        {
+            key: '2',
+            keterangan: 'Nilai Praktek',
+            persentase: '70%',
+        },
+        {
+            key: '3',
+            keterangan: 'Total',
+            persentase: '100%',
+        },
+    ];
+
+    const columns2 = [
+        {
+            title: 'Nilai Angka',
+            dataIndex: 'nilaiAngka',
+            key: 'nilaiAngka',
+        },
+        {
+            title: 'Nilai Huruf',
+            dataIndex: 'nilaiHuruf',
+            key: 'nilaiHuruf',
+        },
+    ];
+
+    const dataSource2 = [
+        {
+            key: '1',
+            nilaiAngka: '85 < nilai ≤ 100',
+            nilaiHuruf: 'A',
+        },
+        {
+            key: '2',
+            nilaiAngka: '75 ≤ nilai ≤ 85',
+            nilaiHuruf: 'B',
+        },
+        {
+            key: '3',
+            nilaiAngka: '0 ≤ nilai < 75',
+            nilaiHuruf: 'C',
+        },
+    ];
 
     return (
         <>
             <Modal open={props.open} onCancel={props.onCancel} footer={<Button onClick={props.onCancel}>Tutup</Button>} width={1200} title="Form Nilai">
                 <Card className="m-[20px]">
+                    <div className="flex w-[500px] gap-5 my-5">
+                        <Table bordered style={{
+                            marginTop: "10px",
+                            width: "100%"
+                        }} columns={columns1} dataSource={dataSource1} pagination={false} />
+                    </div>
                     <Table columns={columns} dataSource={data} />
                 </Card>
             </Modal>

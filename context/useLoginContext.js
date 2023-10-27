@@ -11,7 +11,7 @@ export default function useLoginContext() {
     const openNotification = () => {
         api.error({
             message: "Login gagal",
-            description: "Username dan password anda salah, silahkan coba kembali",
+            description: "Username dan Password yang Anda masukkan tidak valid. Silahkan coba lagi atau hubungi Admin (085738099189)",
         });
     };
 

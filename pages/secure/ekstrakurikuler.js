@@ -245,10 +245,10 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
 
     const columns = [
         {
-            title: "Nama",
+            title: "Nama Ekstrakurikuler",
             dataIndex: "name",
             key: "name",
-            width: "fit",
+            width: "200px",
             ...getColumnSearchProps("name"),
             // fixed: "left",
             // render: (_, record) => (
@@ -296,7 +296,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
             ...getColumnSearchProps("hari"),
         },
         {
-            title: "Status",
+            title: "Kategori",
             dataIndex: "wajib",
             key: "wajib",
             ...getColumnSearchProps("wajib"),

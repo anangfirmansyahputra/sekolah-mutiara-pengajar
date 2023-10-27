@@ -5,6 +5,7 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Skeleton, Spin, Typography } from "antd";
 
 import Head from "next/head";
+import Image from "next/image";
 
 const { Title, Text } = Typography;
 
@@ -96,15 +97,18 @@ export default function Login() {
                     <div className="flex-1 flex items-center justify-center bg-[#148951] relative">
                         <div className="h-[100px] w-[100px] rounded-full bg-white absolute top-[-40px] left-[-40px]"></div>
                         <div className="bg-white px-5 pb-5 shadow-md rounded-md w-[300px]">
+                            <div className="relative aspect-video h-[100px] mx-auto">
+                                <Image fill className="object-contain" src={"/assets/logo/logo.png"} />
+                            </div>
                             <Skeleton
                                 active={true}
                                 loading={false}>
                                 <Spin spinning={loading}>
-                                    <div className="mb-10">
+                                    <div className="mb-10 mt-[-30px]">
                                         <Title
                                             className="text-center"
                                             level={4}>
-                                            Sistem Pengajar
+                                            Sistem Pembina
                                         </Title>
                                     </div>
                                     <Form

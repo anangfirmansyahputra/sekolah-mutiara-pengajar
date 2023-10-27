@@ -12,7 +12,7 @@ export default function Sidebar() {
     const router = useRouter();
     const { data } = useSession();
 
-    const selectedKey = (router.pathname === "/secure/dashboard" && "dashboard") || (router.pathname.includes("/pengajar") && "pengajar") || (router.pathname.includes("/ekstrakurikuler") && "ekstrakurikuler") || (router.pathname.includes("/siswa") && "siswa") || (router.pathname.includes("/absensi") && "absensi") || (router.pathname.includes("/prestasi") && "prestasi") || (router.pathname.includes("/pengumuman") && "pengumuman") || (router.pathname.includes("/gallery") && "gallery") || (router.pathname.includes("/kelas") && "kelas") || (router.pathname.includes("/matpel") && "matpel");
+    const selectedKey = (router.pathname === "/secure/dashboard" && "dashboard") || (router.pathname.includes("/pengajar") && "pengajar") || (router.pathname.includes("/ekstrakurikuler") && "ekstrakurikuler") || (router.pathname.includes("/siswa") && "siswa") || (router.pathname.includes("/kelola-data-siswa") && "kelola-data-siswa") || (router.pathname.includes("/prestasi") && "prestasi") || (router.pathname.includes("/pengumuman") && "pengumuman") || (router.pathname.includes("/gallery") && "gallery") || (router.pathname.includes("/kelas") && "kelas") || (router.pathname.includes("/matpel") && "matpel");
 
     return (
         <Sider
