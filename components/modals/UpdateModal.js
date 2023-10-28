@@ -20,7 +20,7 @@ const UpdateModal = ({ open, onOk, onCancel, data }) => {
             noTelp: data?.noTelp,
             tgl: dayjs(data?.tgl),
             alamat: data?.alamat,
-            mengajar: data?.mengajar?.name ?? "-",
+            // mengajar: data?.mengajar?.name ?? "-",
             ekstrakurikuler: data?.ekstrakurikuler?.map(item => item.name).join(", ") ?? "-"
         })
     }, [data])
@@ -74,14 +74,14 @@ const UpdateModal = ({ open, onOk, onCancel, data }) => {
                         <Form.Item name="nama" label="Nama">
                             <Input disabled />
                         </Form.Item>
-                        <Form.Item name="mengajar" label="Mengajar">
+                        {/* <Form.Item name="mengajar" label="Mengajar">
+                            <Input disabled />
+                        </Form.Item> */}
+                        <Form.Item name="ekstrakurikuler" label="Ekstrakurikuler">
                             <Input disabled />
                         </Form.Item>
                         <Form.Item name="alamat" label="Alamat">
                             <Input.TextArea />
-                        </Form.Item>
-                        <Form.Item name="ekstrakurikuler" label="Ekstrakurikuler">
-                            <Input disabled />
                         </Form.Item>
                     </Col>
                     <Col span={12}>

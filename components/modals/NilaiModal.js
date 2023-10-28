@@ -325,11 +325,15 @@ export default function NilaiModal(props) {
         <>
             <Modal open={props.open} onCancel={props.onCancel} footer={<Button onClick={props.onCancel}>Tutup</Button>} width={1200} title="Form Nilai">
                 <Card className="m-[20px]">
-                    <div className="flex w-[500px] gap-5 my-5">
+                    <div className="flex w-full gap-5 mb-5">
                         <Table bordered style={{
                             marginTop: "10px",
                             width: "100%"
                         }} columns={columns1} dataSource={dataSource1} pagination={false} />
+                        <Table bordered style={{
+                            marginTop: "10px",
+                            width: "100%"
+                        }} columns={columns2} dataSource={dataSource2} pagination={false} />
                     </div>
                     <Table columns={columns} dataSource={data} />
                 </Card>

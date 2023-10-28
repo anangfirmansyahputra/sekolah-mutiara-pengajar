@@ -525,7 +525,7 @@ export default function Ekstrakurikuler({ ekstrakurikuler, pengajar }) {
                                             required: true
                                         }
                                     ]}
-                                    label="Wajib"
+                                    label="Kategori"
                                     name="wajib">
                                     <Radio.Group buttonStyle='solid' optionType='button'>
                                         <Radio value={true}>Wajib</Radio>

@@ -327,11 +327,11 @@ export default function Absensi({ siswa, ekstrakurikuler }) {
                             }}>Dashboard</Link>
                         },
                         {
-                            title: "Kelola Data Absensi"
+                            title: "Kelola Data Siswa"
                         }
                     ]} />
                 </div>
-                <Card title="Kelola Data Absensi">
+                <Card title="Kelola Data Siswa">
                     <Table
                         bordered
                         size="small"
